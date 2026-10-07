@@ -1,6 +1,8 @@
 # Modul Mahasiswa Lab 10 — Monitoring dan SLI/SLO
 
-**Sesi RPS:** 10 · **Mode utama:** Python lokal · **Hasil yang dikumpulkan:** log probe, perhitungan, status page, analisis gangguan, dan commit Git.
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
+**Sesi RPS:** 10 · **Mode utama:** Python lokal · **Bukti latihan opsional untuk proyek:** log probe, perhitungan, status page, analisis gangguan, dan commit Git.
 
 **Jenis bukti visual:** status page UP, DOWN, dan pulih adalah screenshot browser nyata dari simulasi tiga layanan. Gambar terminal/log berlatar gelap menata ulang teks keluaran uji agar terbaca; itu bukan screenshot terminal langsung. Mahasiswa tetap perlu mengambil bukti dari run sendiri.
 

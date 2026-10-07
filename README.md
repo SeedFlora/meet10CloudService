@@ -1,5 +1,17 @@
 # Lab 10 — Monitoring, log terstruktur, SLI/SLO
 
+<!-- lecture-materials:start -->
+
+## Materi teori sebelum praktikum
+
+- [Pertemuan 10: MLOps](slides/Teori_Pertemuan_10.pptx)
+
+Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
+
+<!-- lecture-materials:end -->
+
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
 **Capaian:** menjalankan synthetic uptime check untuk tiga service, menghitung availability dan p95, menetapkan SLO, membuat status page, dan membahas alert. Script memakai Python standard library; cloud account tidak diperlukan.
 
 ## Jalankan lokal
@@ -31,4 +43,4 @@ Route Handler Lab 08 memakai `src/lib/logger.ts` dan mencatat JSON (`timestamp`,
 
 Rujukan: [Google Core Web Vitals](https://web.dev/articles/vitals), [INP menggantikan FID](https://web.dev/blog/fid), [Vercel observability](https://vercel.com/docs/observability).
 
-Checker mandiri: `python -B tests/challenge.py` menguji kode dengan server HTTP sementara tanpa tiga service lain; hasil **9 PASS, 0 FAIL**. Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan dosen](PANDUAN_DOSEN.md), [panduan Git](PANDUAN_GIT.md). Screenshot berada di `screenshots/`.
+Checker mandiri: `python -B tests/challenge.py` menguji kode dengan server HTTP sementara tanpa tiga service lain; hasil **9 PASS, 0 FAIL**. Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan Git](PANDUAN_GIT.md). Screenshot berada di `screenshots/`.
