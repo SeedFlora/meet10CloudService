@@ -2,6 +2,8 @@
 
 **Sesi RPS:** 10 · **Mode utama:** Python lokal · **Hasil yang dikumpulkan:** log probe, perhitungan, status page, analisis gangguan, dan commit Git.
 
+**Jenis bukti visual:** status page UP, DOWN, dan pulih adalah screenshot browser nyata dari simulasi tiga layanan. Gambar terminal/log berlatar gelap menata ulang teks keluaran uji agar terbaca; itu bukan screenshot terminal langsung. Mahasiswa tetap perlu mengambil bukti dari run sendiri.
+
 ## Tujuan dan konsep
 
 Anda akan memeriksa tiga service Cloud Notes secara berkala: Next.js Lab 08, API Lab 06, dan Gradio Lab 09. `monitor.py` menyimpan waktu, status, serta latensi setiap probe sebagai JSON Lines; `report.py` menghitung availability dan p95; `status.py` membuat halaman HTML. Ini adalah *synthetic check* dari satu mesin, bukan bukti uptime produksi.
@@ -39,7 +41,7 @@ python status.py
 
 ### Tampilan pada setiap langkah
 
-**Langkah 1 dan 4 — target serta perhitungan.** Bagian atas memperlihatkan URL health yang dicek; bagian bawah adalah ringkasan kumulatif setelah sampel UP dan DOWN pada mesin uji.
+**Langkah 1 dan 4 — target serta perhitungan.** Bagian atas memperlihatkan URL health yang dicek; bagian bawah menyajikan ulang ringkasan kumulatif setelah sampel UP dan DOWN pada mesin uji. Ini visualisasi transkrip aktual, bukan tangkapan layar terminal langsung.
 
 ![Konfigurasi target dan hasil report monitor](screenshots/lab10_target_report.png)
 
@@ -53,9 +55,15 @@ python status.py
 
 **Langkah 3 — web status setelah gangguan.** Hanya Next lokal dihentikan; kartu Next menjadi DOWN sedangkan target lain tetap UP.
 
-![Status page setelah target Next lokal dihentikan](screenshots/lab10_status_down.png)
+![Status page saat simulasi insiden Next lokal](screenshots/lab10_status_down.png)
 
 * **Langkah:** Hentikan hanya Next.js lokal, ulangi `python monitor.py --count 2 --interval 1`, lalu `python status.py`. **Fungsi:** Mensimulasikan gangguan dan menguji perubahan status. **Cara kerja:** Probe Next gagal sementara target lain tetap merespons; HTML memakai hasil terakhir per target. **Baca hasil:** Kartu Next menjadi DOWN, target lain UP; cocokkan dengan URL dan waktu probe.
+
+**Langkah 4 — pemulihan.** Nyalakan lagi `npm run dev` Lab 08, jalankan `python monitor.py --count 1 --interval 1`, lalu `python status.py`. Gambar berikut berasal dari urutan uji 3 probe sehat, 2 gagal, dan 1 pulih pada tiga layanan nyata.
+
+![Status Next pulih namun histori gangguan tetap dihitung](screenshots/10_status_pulih_aktual.png)
+
+* **Langkah:** Start Next lagi dan tambahkan satu probe tanpa `--reset`. **Fungsi:** Memisahkan status terbaru dari availability historis. **Cara kerja:** `monitor.py` menambahkan satu baris sukses; `status.py` membuat ulang snapshot dari seluruh JSONL. **Baca hasil:** Next kembali **UP**, tetapi baru 4/6 atau 66,67% dan budget -1,94; API serta Gradio 6/6.
 
 **Langkah 5 — log server.** Ini satu baris log nyata dari percobaan `GET /api/notes` saat backend Lab 06 dimatikan. Pada jalur error ini terlihat `level=error` dan `event=notes_proxy_unavailable`, tanpa field `status` HTTP. Bandingkan `requestId` dan durasi dengan hasil probe, lalu ulangi pada request catatan milik Anda.
 
@@ -103,21 +111,25 @@ Anda bertugas memantau web [Lab 08](https://github.com/SeedFlora/meet8CloudServi
 6. **Hubungkan log.** Buat satu catatan melalui Lab 08. Periksa baris JSON `notes_proxy` di terminal Next dan header `X-Request-ID` pada respons API. Kunci: ID sama mempermudah korelasi satu request; monitor memberi status/latensi berkala untuk target, bukan trace penuh. Jangan tempelkan isi catatan ke log.
 7. **Jalankan checker mandiri.** `python -B tests/challenge.py` pada PowerShell/Bash. Kunci **9 PASS, 0 FAIL**. Checker membuat server HTTP sementara pada port bebas, menguji HTTP 200/503, empat observasi, availability, budget negatif, status HTML, escaping, dan validasi target duplikat. Tidak perlu akun atau tiga service lain untuk checker ini.
 
-![Status page tiga layanan sehat dari run lokal](screenshots/10_status_up_aktual.png)
+![Status page tiga layanan sehat dari run lokal](screenshots/10_status_baseline_baru.png)
 
 *Perintah/tindakan:* `python monitor.py --count 3 --interval 1 --reset`, `python report.py`, `python status.py`, lalu buka HTML. *Fungsi:* membuat baseline. *Cara kerja:* tiga URL diperiksa tiap putaran, hasil JSONL diringkas, HTML disusun dari hasil terakhir. *Baca hasil:* tiga kartu UP dan 100% pada sampel tiga check.
 
-![Status Next turun, dua layanan lain tetap hidup](screenshots/10_status_down_aktual.png)
+![Simulasi insiden Next turun, dua layanan lain tetap hidup](screenshots/10_status_down_baru.png)
 
 *Perintah/tindakan:* hentikan Next, jalankan `python monitor.py --count 2 --interval 1` lalu `python status.py`. *Fungsi:* menguji deteksi gangguan terisolasi. *Cara kerja:* dua baris DOWN baru ditambahkan hanya untuk target Next, lalu snapshot HTML diperbarui. *Baca hasil:* Next DOWN, 3/5 atau 60%, budget -1,95; API dan Gradio UP.
 
+![Pemulihan setelah simulasi insiden dan satu probe baru](screenshots/10_status_pulih_aktual.png)
+
+*Perintah/tindakan:* hidupkan `npm run dev` Lab 08 lagi, jalankan `python monitor.py --count 1 --interval 1` tanpa `--reset`, lalu `python status.py` dan buka ulang `status.html`. *Fungsi:* menguji pemulihan tanpa menghapus histori insiden. *Cara kerja:* satu keberhasilan baru ditambahkan pada file JSONL yang sama. *Baca hasil:* Next terakhir UP, tetapi 4/6 = 66,67% dan budget -1,94 karena dua kegagalan sebelumnya tetap tersimpan.
+
 ![Ringkasan laporan sesudah Next berhenti](screenshots/10_report_output.png)
 
-*Perintah/tindakan:* `python report.py` setelah 3 probe sehat dan 2 probe gagal untuk Next. *Fungsi:* menghitung SLI/SLO. *Cara kerja:* script mengelompokkan JSONL per target dan menghitung availability, p95 sukses, serta sisa budget. *Baca hasil:* Next 3/5, 60%, -1,95 check; gambar menata ulang JSON aktual agar terbaca.
+*Perintah/tindakan:* `python report.py` setelah 3 probe sehat dan 2 probe gagal untuk Next. *Fungsi:* menghitung SLI/SLO. *Cara kerja:* script mengelompokkan JSONL per target dan menghitung availability, p95 sukses, serta sisa budget. *Baca hasil:* Next 3/5, 60%, -1,95 check; gambar menata ulang JSON aktual agar terbaca, bukan tangkapan layar terminal langsung.
 
 ![Pemeriksaan mandiri Lab 10](screenshots/10_challenge_output.png)
 
-*Perintah/tindakan:* `python -B tests/challenge.py`. *Fungsi:* mengecek kode monitor tanpa tiga service eksternal. *Cara kerja:* test menyalakan HTTP server sementara dan menyimulasikan UP/DOWN. *Baca hasil:* 9 PASS, 0 FAIL; output aktual ditata ulang untuk modul.
+*Perintah/tindakan:* `python -B tests/challenge.py`. *Fungsi:* mengecek kode monitor tanpa tiga service eksternal. *Cara kerja:* test menyalakan HTTP server sementara dan menyimulasikan UP/DOWN. *Baca hasil:* 9 PASS, 0 FAIL; output aktual ditata ulang untuk modul, bukan tangkapan layar terminal langsung.
 
 ### Jawaban pertanyaan laporan
 

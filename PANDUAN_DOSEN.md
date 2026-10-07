@@ -2,6 +2,8 @@
 
 **Repo materi:** `SeedFlora/meet10CloudService` · **durasi contoh:** 100 menit · **jalur utama:** Python standard library. Untuk kasus tiga layanan, hidupkan [Lab 06](https://github.com/SeedFlora/meet6CloudService), [Lab 08](https://github.com/SeedFlora/meet8CloudService), dan [Lab 09](https://github.com/SeedFlora/meet9CloudService) pada satu komputer/Codespace. Checker mandiri tetap dapat berjalan tanpa ketiga layanan.
 
+**Jenis bukti visual:** halaman status UP, DOWN, dan pemulihan adalah screenshot browser dari simulasi nyata. Gambar keluaran terminal/log berlatar gelap adalah visualisasi transkrip uji yang ditata ulang, bukan screenshot terminal langsung.
+
 ## Hasil belajar dan alasan kasus
 
 Mahasiswa mengoperasikan synthetic monitor, membaca JSONL, menghitung availability dan p95, membuat halaman status, menyimulasikan gangguan, serta menghubungkan metric dengan log request. Kasus kerja: tim operasi melihat web tidak tersedia, tetapi API dan model sentimen masih hidup. Mereka perlu mengisolasi komponen dan menjelaskan sisa error budget. Tekankan bahwa lima probe dalam hitungan detik bukan dasar klaim SLO produksi.
@@ -34,25 +36,29 @@ Mahasiswa mengoperasikan synthetic monitor, membaca JSONL, menghitung availabili
 
 **Pemulihan:** jalankan lagi `npm run dev` di repo Lab 08, tambahkan satu putaran monitor tanpa reset. Status terakhir Next menjadi UP, tetapi availability kumulatif tetap di bawah 100% karena observasi gagal tidak dihapus. `status.html` baru berubah setelah `python status.py` dieksekusi lagi.
 
+![Pemulihan setelah simulasi insiden, histori dua kegagalan tetap ada](screenshots/10_status_pulih_aktual.png)
+
+*Command:* di Lab 08 hidupkan `npm run dev`; di Lab 10 jalankan `python monitor.py --count 1 --interval 1`, `python report.py`, `python status.py`, lalu buka ulang HTML. *Fungsi:* menunjukkan bahwa status terkini dan SLI historis berbeda. *Cara kerja:* satu probe baru ditambahkan ke JSONL lama; halaman status dibangun ulang. *Baca hasil:* Next UP tetapi 4/6 atau 66,67%, budget -1,94; dua service lain 6/6.
+
 **Log:** lakukan GET/POST `/api/notes` di Lab 08. Baris JSON server `notes_proxy` memiliki `timestamp`, `level`, `event`, `requestId`, `method`, `status`, `durationMs`. Header `X-Request-ID` pada respons dapat dicocokkan dengan satu baris log. Pada jalur `notes_proxy_unavailable`, log error tidak punya status upstream. Log tidak berisi judul/isi catatan atau token. Metric p95 per target berbeda dari durasi log satu request.
 
 **Checker mandiri:** `python -B tests/challenge.py` memeriksa config, probe 200/503, penulisan empat observasi, availability UP/DOWN, budget negatif, ekspor HTML, escaping nama target, dan penolakan nama duplikat. **9 PASS, 0 FAIL**. Ini menguji perilaku script tanpa menunggu tiga repo; praktik operasional tiga layanan tetap perlu dilakukan terpisah.
 
-![Status tiga layanan saat sehat](screenshots/10_status_up_aktual.png)
+![Status tiga layanan saat sehat](screenshots/10_status_baseline_baru.png)
 
 *Command:* `python monitor.py --count 3 --interval 1 --reset; python report.py; python status.py`, kemudian buka HTML. *Fungsi:* membuat baseline. *Cara kerja:* `monitor` menyimpan JSONL, `report` merangkum, `status` menulis snapshot HTML. *Baca hasil:* tiga kartu UP, 3/3.
 
-![Status Next DOWN sementara dua target tetap UP](screenshots/10_status_down_aktual.png)
+![Simulasi insiden Next DOWN sementara dua target tetap UP](screenshots/10_status_down_baru.png)
 
 *Command:* stop Next saja; `python monitor.py --count 2 --interval 1; python report.py; python status.py`. *Fungsi:* mengisolasi gangguan web. *Cara kerja:* dua probe tambahan gagal hanya pada Next, status terakhir dan agregat berubah. *Baca hasil:* Next DOWN 3/5 = 60%, budget -1,95; API/Gradio UP 5/5.
 
 ![Keluaran report setelah gangguan](screenshots/10_report_output.png)
 
-*Command:* `python report.py`. *Fungsi:* membaca angka SLO langsung dari JSONL. *Cara kerja:* report menghitung per target dan mempertahankan budget negatif bila gagal melampaui jatah. *Baca hasil:* Next 3/5, 60%, -1,95; cuplikan JSON aktual ditata ulang.
+*Command:* `python report.py`. *Fungsi:* membaca angka SLO langsung dari JSONL. *Cara kerja:* report menghitung per target dan mempertahankan budget negatif bila gagal melampaui jatah. *Baca hasil:* Next 3/5, 60%, -1,95; cuplikan JSON aktual ditata ulang, bukan screenshot terminal langsung.
 
 ![Hasil checker mandiri Lab 10](screenshots/10_challenge_output.png)
 
-*Command:* `python -B tests/challenge.py`. *Fungsi:* memastikan logika monitor sebelum kelas. *Cara kerja:* server HTTP lokal otomatis menyediakan 200 dan 503, lalu script memeriksa laporan/status. *Baca hasil:* 9 PASS, 0 FAIL; keluaran aktual ditata ulang.
+*Command:* `python -B tests/challenge.py`. *Fungsi:* memastikan logika monitor sebelum kelas. *Cara kerja:* server HTTP lokal otomatis menyediakan 200 dan 503, lalu script memeriksa laporan/status. *Baca hasil:* 9 PASS, 0 FAIL; keluaran aktual ditata ulang, bukan screenshot terminal langsung.
 
 ## Kunci tanya jawab
 
