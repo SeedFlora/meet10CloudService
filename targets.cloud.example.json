@@ -1,0 +1,5 @@
+[
+  { "name": "Vercel app", "url": "https://YOUR_APP.vercel.app/api/health" },
+  { "name": "HF Space", "url": "https://YOUR_SPACE.hf.space/" },
+  { "name": "BaaS via app health", "url": "https://YOUR_APP.vercel.app/api/dependency-health" }
+]

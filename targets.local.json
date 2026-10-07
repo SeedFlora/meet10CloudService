@@ -1,0 +1,5 @@
+[
+  { "name": "Next.js", "url": "http://127.0.0.1:3000/api/health" },
+  { "name": "API Compose", "url": "http://127.0.0.1:8000/health" },
+  { "name": "Gradio", "url": "http://127.0.0.1:7860/" }
+]
