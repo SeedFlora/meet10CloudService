@@ -14,19 +14,9 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
 
 **Capaian:** menjalankan synthetic uptime check untuk tiga service, menghitung availability dan p95, menetapkan SLO, membuat status page, dan membahas alert. Script memakai Python standard library; cloud account tidak diperlukan.
 
-## Jalankan lokal
+## Mulai praktikum lokal
 
-Jalankan [API Lab 06](https://github.com/SeedFlora/meet6CloudService), [Next.js Lab 08](https://github.com/SeedFlora/meet8CloudService), dan [Gradio Lab 09](https://github.com/SeedFlora/meet9CloudService) pada komputer/Codespace yang sama. Dari root repo Lab 10:
-
-```bash
-python monitor.py --count 5 --interval 3 --reset
-python report.py
-python status.py
-```
-
-`--reset` memulai file observasi baru; untuk simulasi gangguan berikutnya jalankan monitor tanpa opsi ini agar histori bertambah. Buka `status.html` di browser. Hentikan salah satu service, ulangi monitor, lalu amati `DOWN`, availability, dan error budget. `observations.jsonl` diabaikan Git karena merekam data operasi lokal. Bila memakai `--output observations-baru.jsonl`, teruskan path yang sama ke `python report.py observations-baru.jsonl` dan `python status.py --input observations-baru.jsonl --output status-baru.html`.
-
-`report.py` menghitung p95 hanya dari respons yang berhasil dan availability dari jumlah check yang berhasil. Ini **sampel kelas**, bukan SLO produksi yang valid dari lima permintaan. Contoh SLO 99% berarti maksimal 1% check boleh gagal dalam periode yang ditetapkan. Bahas mengapa satu kegagalan dari lima check langsung menghabiskan budget kecil tersebut.
+Ikuti [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md). Modul memakai **PowerShell, clone baru, satu perintah tiap langkah**, hasil yang diharapkan, dan screenshot contoh. Semua langkah utama berjalan lokal. Tidak ada laporan atau push terpisah yang wajib dikumpulkan.
 
 ## Log dan observability
 
