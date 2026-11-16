@@ -28,7 +28,8 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, Response
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import (CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, disable_created_metrics,
+                               generate_latest)
 from pydantic import BaseModel, Field
 
 from model import DRIFT_POOL, LABELS, NORMAL_POOL, SentimentModel, oov_bins, psi, tokenize
@@ -36,6 +37,8 @@ from model import DRIFT_POOL, LABELS, NORMAL_POOL, SentimentModel, oov_bins, psi
 MODEL_VERSION = os.getenv("MODEL_VERSION", "nb-1.0")
 PORT = int(os.getenv("PORT", "8000"))
 STATIC = Path(__file__).with_name("static")
+
+disable_created_metrics()  # /metrics lebih ringkas: tanpa deret *_created
 
 model = SentimentModel.train()
 REFERENCE_BINS = oov_bins([model.oov_ratio(text) for text, _ in NORMAL_POOL])
@@ -46,7 +49,7 @@ window_lock = threading.Lock()
 HTTP_REQUESTS = Counter("http_requests_total", "Jumlah request HTTP", ["method", "path", "status"])
 HTTP_LATENCY = Histogram(
     "http_request_duration_seconds", "Latensi request HTTP (detik)", ["path"],
-    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.35, 0.5, 1.0, 2.0),
+    buckets=(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.35, 0.5, 1.0, 2.0),
 )
 # ---- Layer 2: model --------------------------------------------------------
 PREDICTIONS = Counter("model_predictions_total", "Jumlah prediksi per label", ["label"])
