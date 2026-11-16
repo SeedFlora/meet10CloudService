@@ -42,13 +42,13 @@ Hasil yang diharapkan: **11/11 PASS**. Tambahkan `--drift` untuk ikut menguji al
 
 ## 2. Skenario demo (sekitar 15 menit)
 
-Semua langkah, kecuali langkah 4, cukup diklik di panel http://localhost:8090. Angka di bawah adalah hasil uji 16 November 2026.
+Semua langkah, kecuali langkah 4, cukup diklik di panel http://localhost:8090. Angka di bawah adalah hasil uji 16 November 2026 (screenshot di folder `screenshots/`).
 
 | Langkah | Aksi | Yang terlihat di Grafana | Alert Prometheus |
 |---|---|---|---|
-| 1 | **Trafik normal** | sekitar 5 req/detik, p99 di bawah 10 ms, confidence sekitar 0,86, PSI di bawah 0,1, override sekitar 2% | tidak ada |
-| 2 | **Trafik drift** (bahasa gaul dan campur Inggris) | distribusi label bergeser, confidence turun ke sekitar 0,4, PSI melonjak di atas 0,2, override sekitar 50% | `InputDriftPSI`, `ConfidenceTurun`, `ManualOverrideTinggi` |
-| 3 | **Trafik normal** lalu **Latensi +800 ms** dan **Error 20%** | p99 di atas 200 ms, error rate sekitar 20% | `LatensiP99Tinggi`, `ErrorRateTinggi` |
+| 1 | **Trafik normal** | sekitar 5 req/detik, p99 sekitar 2,5 ms, confidence sekitar 0,87, PSI sekitar 0,01, override di bawah 1% | tidak ada |
+| 2 | **Trafik drift** (bahasa gaul dan campur Inggris) | p99 tetap di bawah 5 ms dan error 0%, tetapi confidence turun ke sekitar 0,43, PSI melonjak ke sekitar 8,8, override sekitar 54% | `InputDriftPSI`, `ConfidenceTurun`, `ManualOverrideTinggi` (firing sekitar 70 detik setelah klik) |
+| 3 | **Trafik normal** lalu **Latensi +800 ms** dan **Error 20%** | p99 sekitar 1 detik, error rate naik ke kisaran 15 sampai 20%, request turun ke sekitar 1 per detik | `LatensiP99Tinggi`, `ErrorRateTinggi` |
 | 4 | `docker compose stop model-api` | Model API dan website model-api `DOWN` | `ModelApiDown`, `WebsiteDown` |
 | 5 | **Reset normal**, `docker compose start model-api`, **Trafik normal** | semua panel pulih | alert kembali *inactive* |
 
@@ -112,3 +112,22 @@ Matikan setelah selesai dengan `docker compose down` (data metrik tetap tersimpa
 - Login anonim dan password `admin` hanya untuk lab lokal. Jangan buka port Grafana ke internet dengan setelan ini.
 - Model API berjalan dengan satu worker. Bila memakai banyak worker, gunakan mode multiprocess `prometheus_client`.
 - Alert di sini hanya tampil di Prometheus dan Grafana. Untuk notifikasi (email, Discord, Slack), tambahkan Alertmanager.
+
+## 8. Bukti uji (16 November 2026)
+
+Diuji di workspace Linux dengan Docker 29.9.3 dan Compose v5 memakai file di folder ini apa adanya (kecuali proxy jaringan workspace untuk probe internet). Screenshot ada di `screenshots/`:
+
+| File | Isi |
+|---|---|
+| `01_panel_simulasi.png` | Panel http://localhost:8090 dengan satu prediksi |
+| `02_metrics_endpoint.png` | Endpoint `/metrics` berisi metrik model dan bisnis |
+| `03_prometheus_target_health.png` | Semua job UP, termasuk probe lokal dan web |
+| `04_prometheus_query_prediksi.png`, `07b_prometheus_query_psi.png` | Uji PromQL di tab Query |
+| `05_grafana_normal.png` | Dashboard saat trafik normal |
+| `06_grafana_drift.png`, `07_alert_drift_firing.png` | Drift: 3 alert firing sekitar 70 detik setelah klik |
+| `08_grafana_chaos.png`, `09_alert_chaos_firing.png` | Chaos latensi dan error |
+| `10_alert_model_api_down.png`, `10b_grafana_down.png` | Container model-api dihentikan |
+| `11_grafana_pulih.png` | Semua kembali hijau |
+| `12_check_stack_12_PASS.png`, `12_check_stack_output.txt` | `docker compose ps` dan `check_stack.py --drift`: 12/12 PASS |
+
+Belum diuji: menjalankan stack di Windows dengan Docker Desktop, notifikasi lewat Alertmanager (tidak termasuk stack), dan probe ke URL Space/Vercel milik kelompok.

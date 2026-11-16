@@ -1,0 +1,24 @@
+$ docker compose ps --format "table {{.Service}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+SERVICE      IMAGE                            STATUS                   PORTS
+blackbox     prom/blackbox-exporter:v0.29.1   Up 14 minutes            9115->9115/tcp
+grafana      grafana/grafana:13.3.1           Up 14 minutes            3001->3000/tcp
+model-api    ml-monitoring/model-api:1.0      Up 2 minutes (healthy)   8090->8000/tcp
+prometheus   prom/prometheus:v3.13.5          Up 14 minutes            9090->9090/tcp
+
+$ docker compose exec model-api python check_stack.py --drift
+Cek stack: API http://127.0.0.1:8000 | Prometheus http://prometheus:9090 | Grafana http://grafana:3000
+
+[PASS]  1. Model API sehat (/health) - model nb-1.0
+[PASS]  2. Prediksi berjalan (/predict) - 'paket dikirim hari senin' -> netral (0.85)
+[PASS]  3. Endpoint /metrics berisi metrik 3 layer - metrik 3 layer lengkap
+[PASS]  4. Prometheus siap - Prometheus siap
+[PASS]  5. Semua target scrape up - up: ['blackbox', 'model-api', 'prometheus']
+[PASS]  6. Blackbox probe website lokal sukses - huggingface-hub=UP, model-api=UP
+[PASS]  7. Alert rules 3 layer termuat - 7 rule di grup ['layer1-sistem', 'layer2-model', 'layer3-bisnis', 'website']
+[PASS]  8. PromQL membaca metrik model - total prediksi tercatat = 817
+[PASS]  9. Grafana sehat - Grafana 13.3.1
+[PASS] 10. Dashboard ML Production ter-provision - 'ML Production · Sentiment API (3-Layer Monitoring)' (17 panel)
+[PASS] 11. Grafana bisa query Prometheus - Grafana -> Prometheus: up = 1
+[PASS] 12. Simulasi drift memicu alert InputDriftPSI - PSI = 0.51, alert InputDriftPSI pending
+
+Hasil: 12/12 PASS
