@@ -33,4 +33,6 @@ Route Handler Lab 08 memakai `src/lib/logger.ts` dan mencatat JSON (`timestamp`,
 
 Rujukan: [Google Core Web Vitals](https://web.dev/articles/vitals), [INP menggantikan FID](https://web.dev/blog/fid), [Vercel observability](https://vercel.com/docs/observability).
 
+**Tambahan: monitor endpoint AI.** Halaman `/` yang menjawab 200 belum membuktikan model siap. `targets.ai.example.json` memantau endpoint yang ikut memeriksa model atau dependensinya: `/gradio_api/info` (app Gradio Lab 09), `/ready` (RAG Lab 11, memeriksa database pgvector), dan `/api/ready` (Next.js Lab 08). Jalankan `python monitor.py --targets targets.ai.example.json --output ai_observations.jsonl --reset --count 3 --interval 0`, lalu `python report.py ai_observations.jsonl`. Untuk provider API (Jalur C), catat juga rasio HTTP 429/5xx dan sisa kuota harian dari dashboard provider. Diuji 16 November 2026 dengan ketiga service lokal hidup: semua target UP.
+
 Checker mandiri: `python -B tests/challenge.py` menguji kode dengan server HTTP sementara tanpa tiga service lain; hasil **9 PASS, 0 FAIL**. Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan Git](PANDUAN_GIT.md). Screenshot berada di `screenshots/`.
