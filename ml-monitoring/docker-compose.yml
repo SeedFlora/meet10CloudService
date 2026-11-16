@@ -1,0 +1,68 @@
+# Monitoring ML lokal: model API + Prometheus + Grafana + blackbox exporter.
+#   docker compose up -d --build
+# Panel simulasi : http://localhost:8090
+# Prometheus     : http://localhost:9090
+# Grafana        : http://localhost:3001   (port 3000 dibiarkan untuk Next.js Lab 08)
+name: ml-monitoring
+
+services:
+  model-api:
+    build: ./model-api
+    image: ml-monitoring/model-api:1.0
+    environment:
+      MODEL_VERSION: nb-1.0
+    ports:
+      - "8090:8000"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.13.5            # rilis LTS, didukung sampai Juli 2027
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=2d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - model-api
+    restart: unless-stopped
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.29.1
+    command:
+      - --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./blackbox:/etc/blackbox:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # agar bisa cek aplikasi yang jalan di laptop
+    ports:
+      - "9115:9115"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.3.1             # varian -slim tidak membawa plugin Prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin           # hanya untuk lab lokal
+      GF_AUTH_ANONYMOUS_ENABLED: "true"           # dashboard bisa dilihat tanpa login
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/ml-production.json
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:

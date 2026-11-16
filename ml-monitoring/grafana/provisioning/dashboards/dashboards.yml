@@ -1,0 +1,9 @@
+apiVersion: 1
+providers:
+  - name: ml-monitoring
+    folder: ML Production
+    type: file
+    disableDeletion: true
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/dashboards

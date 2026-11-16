@@ -18,6 +18,10 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
 
 Ikuti [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md). Modul memakai **PowerShell, clone baru, satu perintah tiap langkah**, hasil yang diharapkan, dan screenshot contoh. Semua langkah utama berjalan lokal. Tidak ada laporan atau push terpisah yang wajib dikumpulkan.
 
+## Monitoring ML dengan Prometheus + Grafana (materi P10 ML Production)
+
+Folder [`ml-monitoring/`](ml-monitoring/README.md) berisi stack Docker untuk Bagian 02 materi ML in Production: model API sentimen yang mengekspor metrik 3 layer (sistem, model, bisnis), Prometheus dengan 7 alert, blackbox exporter untuk mengecek website lokal dan web, serta Grafana dengan dashboard siap pakai. Jalankan `docker compose up -d --build` di folder itu, buka http://localhost:8090 (panel simulasi) dan http://localhost:3001 (Grafana). Cek otomatis: `docker compose exec model-api python check_stack.py` (diuji 16 November 2026: 11/11 PASS).
+
 ## Log dan observability
 
 Route Handler Lab 08 memakai `src/lib/logger.ts` dan mencatat JSON (`timestamp`, `level`, `event`, `requestId`, `status`, `durationMs`) pada log server Next.js. Buat beberapa catatan dan cocokkan request di terminal Next.js. Jangan log isi catatan, password, access token, atau webhook URL. Script ini mengukur **uptime** dan **latensi probe**; metrics, logs, dan traces adalah tiga sinyal berbeda. Core Web Vitals saat ini adalah LCP, INP, CLS; FID hanya metrik historis.

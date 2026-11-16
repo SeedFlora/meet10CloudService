@@ -1,0 +1,44 @@
+# Prometheus mengambil (scrape) metrik setiap 5 detik agar perubahan cepat terlihat di kelas.
+# Di produksi, 15-30 detik sudah cukup.
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  # Prometheus memantau dirinya sendiri
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Layer 1-3: metrik dari model API (endpoint /metrics)
+  - job_name: model-api
+    static_configs:
+      - targets: ["model-api:8000"]
+        labels:
+          service: sentiment-api
+
+  # Metrik internal blackbox exporter
+  - job_name: blackbox
+    static_configs:
+      - targets: ["blackbox:9115"]
+
+  # Uji dari luar (synthetic check): apakah website lokal & web bisa diakses?
+  # Daftar URL ada di prometheus/targets/web.yml (dibaca ulang tiap 30 detik).
+  - job_name: web-probe
+    scrape_interval: 15s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      - files: ["targets/web.yml"]
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

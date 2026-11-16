@@ -1,0 +1,67 @@
+# Alert rules 3 layer. Durasi "for" dibuat pendek (15-30 detik) supaya terlihat saat demo kelas.
+# Di produksi biasanya 5-10 menit agar tidak berisik.
+groups:
+  - name: layer1-sistem
+    rules:
+      - alert: ModelApiDown
+        expr: up{job="model-api"} == 0
+        for: 15s
+        labels: {severity: critical, layer: sistem}
+        annotations:
+          summary: "Model API tidak bisa di-scrape Prometheus"
+          tindakan: "Cek docker compose ps dan docker compose logs model-api"
+      - alert: LatensiP99Tinggi
+        expr: histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{path="/predict"}[1m]))) > 0.2
+        for: 30s
+        labels: {severity: warning, layer: sistem}
+        annotations:
+          summary: "p99 latensi /predict di atas 200 ms"
+          tindakan: "Optimasi model (kuantisasi), cek CPU, atau scale out"
+      - alert: ErrorRateTinggi
+        expr: |
+          sum(rate(http_requests_total{path="/predict", status=~"5.."}[1m]))
+            / sum(rate(http_requests_total{path="/predict"}[1m])) > 0.01
+        for: 30s
+        labels: {severity: critical, layer: sistem}
+        annotations:
+          summary: "Lebih dari 1% request /predict gagal (HTTP 5xx)"
+          tindakan: "Baca log, rollback versi model bila error muncul setelah rilis"
+
+  - name: layer2-model
+    rules:
+      - alert: InputDriftPSI
+        expr: model_input_drift_psi > 0.2
+        for: 30s
+        labels: {severity: warning, layer: model}
+        annotations:
+          summary: "Distribusi input bergeser (PSI > 0,2)"
+          tindakan: "Ambil sampel input terbaru, labeli, evaluasi ulang, retrain"
+      - alert: ConfidenceTurun
+        expr: sum(rate(model_confidence_sum[1m])) / sum(rate(model_confidence_count[1m])) < 0.6
+        for: 30s
+        labels: {severity: warning, layer: model}
+        annotations:
+          summary: "Confidence rata-rata model di bawah 0,6"
+          tindakan: "Kemungkinan input di luar distribusi training (OOD); eskalasi ke manusia"
+
+  - name: layer3-bisnis
+    rules:
+      - alert: ManualOverrideTinggi
+        expr: |
+          sum(rate(model_feedback_total{verdict="salah"}[2m]))
+            / sum(rate(model_feedback_total[2m])) > 0.05
+        for: 30s
+        labels: {severity: warning, layer: bisnis}
+        annotations:
+          summary: "Lebih dari 5% prediksi dikoreksi pengguna"
+          tindakan: "Review UX dan kualitas model; pertimbangkan retrain"
+
+  - name: website
+    rules:
+      - alert: WebsiteDown
+        expr: probe_success{job="web-probe"} == 0
+        for: 30s
+        labels: {severity: critical, layer: sistem}
+        annotations:
+          summary: "Website {{ $labels.app }} ({{ $labels.lokasi }}) tidak merespons 2xx"
+          tindakan: "Buka URL-nya; untuk HF Space cek status sleeping/building"
