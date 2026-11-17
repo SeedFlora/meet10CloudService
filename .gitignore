@@ -5,3 +5,6 @@ status.html
 status*.html
 targets.cloud.json
 __pycache__/
+ai_status.html
+targets.ai.json
+ml-monitoring/log_*.txt

@@ -1,0 +1,6 @@
+[
+  { "name": "Gradio API Lab 09", "url": "http://127.0.0.1:7860/gradio_api/info" },
+  { "name": "RAG ready Lab 11", "url": "http://127.0.0.1:8011/ready" },
+  { "name": "Next.js ready Lab 08", "url": "http://127.0.0.1:3000/api/ready" },
+  { "name": "Ollama LLM lokal", "url": "http://127.0.0.1:11434/v1/models" }
+]

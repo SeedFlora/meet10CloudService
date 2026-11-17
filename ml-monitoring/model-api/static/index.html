@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentiment API · Panel Simulasi Monitoring</title>
+<style>
+  :root { --navy:#002677; --orange:#F37021; --ink:#1E293B; --muted:#64748B; --line:#E2E8F0; --bg:#F8FAFC; --green:#059669; --red:#B91C1C; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 "Segoe UI", Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--navy); color:#fff; padding:18px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:2px 0 0; color:#C7D2FE; font-size:13px; }
+  nav a { color:#fff; margin-left:14px; text-decoration:none; font-weight:600; border-bottom:2px solid var(--orange); }
+  main { max-width:1100px; margin:24px auto; padding:0 20px; display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; }
+  h2 { margin:0 0 4px; font-size:16px; color:var(--navy); }
+  .hint { margin:0 0 12px; color:var(--muted); font-size:13px; }
+  textarea { width:100%; min-height:70px; padding:10px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--navy); background:var(--navy); color:#fff; cursor:pointer; margin:6px 6px 0 0; }
+  button.ghost { background:#fff; color:var(--navy); }
+  button.warn { background:var(--orange); border-color:var(--orange); }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:700; color:#fff; }
+  .positif { background:var(--green); } .negatif { background:var(--red); } .netral { background:var(--muted); }
+  .out { margin-top:10px; font-size:14px; min-height:22px; }
+  .status { margin-top:10px; padding:8px 10px; background:var(--bg); border-radius:8px; font-family:Consolas, monospace; font-size:13px; }
+  select { font:inherit; padding:6px; border-radius:6px; border:1px solid var(--line); }
+  ul { margin:6px 0 0; padding-left:18px; } li { margin:3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Sentiment API · Panel Simulasi Monitoring</h1>
+    <p>Model <b id="ver">-</b> · Pertemuan 10 ML in Production · Cloud Services</p>
+  </div>
+  <nav>
+    <a id="lnk-grafana" href="#">Grafana</a>
+    <a id="lnk-prom" href="#">Prometheus</a>
+    <a href="/metrics">/metrics</a>
+    <a href="/docs">API docs</a>
+  </nav>
+</header>
+<main>
+  <section>
+    <h2>1. Coba prediksi</h2>
+    <p class="hint">Satu request = satu titik data di Grafana. Coba juga kalimat gaul/Inggris.</p>
+    <textarea id="text">aplikasinya cepat dan mudah dipakai</textarea>
+    <button onclick="predict()">Prediksi</button>
+    <div class="out" id="pred"></div>
+    <div id="fb" style="display:none">
+      Label sebenarnya:
+      <select id="actual"><option>positif</option><option>negatif</option><option>netral</option></select>
+      <button class="ghost" onclick="sendFeedback()">Kirim umpan balik</button>
+      <span id="fbout"></span>
+    </div>
+  </section>
+  <section>
+    <h2>2. Simulasi trafik pengguna</h2>
+    <p class="hint">5 request/detik selama 3 menit. Separuh "pengguna" memberi umpan balik.</p>
+    <button onclick="sim('normal')">Trafik normal</button>
+    <button class="warn" onclick="sim('drift')">Trafik drift (bahasa gaul)</button>
+    <button class="ghost" onclick="sim('stop')">Stop</button>
+    <div class="status" id="simstat">-</div>
+  </section>
+  <section>
+    <h2>3. Chaos: uji alert layer sistem</h2>
+    <p class="hint">Gangguan buatan pada /predict. Kembalikan ke normal setelah alert terlihat.</p>
+    <button class="warn" onclick="chaos(800,0)">Latensi +800 ms</button>
+    <button class="warn" onclick="chaos(0,0.2)">Error 20%</button>
+    <button class="ghost" onclick="chaos(0,0)">Reset normal</button>
+    <div class="status" id="chaosstat">-</div>
+  </section>
+  <section>
+    <h2>Apa yang diamati di Grafana?</h2>
+    <ul>
+      <li><b>Layer 1 sistem:</b> request/detik, latensi p50/p95/p99, error rate, memori.</li>
+      <li><b>Layer 2 model:</b> distribusi prediksi, confidence rata-rata, drift PSI.</li>
+      <li><b>Layer 3 bisnis:</b> manual override % (prediksi yang dikoreksi pengguna).</li>
+      <li><b>Website:</b> status UP/DOWN dari blackbox exporter (lokal & internet).</li>
+    </ul>
+  </section>
+</main>
+<script>
+const host = location.hostname;
+document.getElementById('lnk-grafana').href = `http://${host}:3001`;
+document.getElementById('lnk-prom').href = `http://${host}:9090/alerts`;
+let last = null;
+async function api(path, body) {
+  const res = await fetch(path, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {});
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail ? JSON.stringify(data.detail) : `HTTP ${res.status}`);
+  return data;
+}
+async function predict() {
+  const out = document.getElementById('pred');
+  try {
+    const t0 = performance.now();
+    last = await api('/predict', {text: document.getElementById('text').value});
+    const ms = Math.round(performance.now() - t0);
+    out.innerHTML = `<span class="pill ${last.label}">${last.label}</span> confidence <b>${last.confidence}</b> · OOV ${last.oov_ratio} · ${ms} ms`;
+    document.getElementById('fb').style.display = 'block';
+    document.getElementById('actual').value = last.label;
+    document.getElementById('fbout').textContent = '';
+  } catch (e) { out.textContent = 'Gagal: ' + e.message; }
+}
+async function sendFeedback() {
+  if (!last) return;
+  const r = await api('/feedback', {predicted: last.label, actual: document.getElementById('actual').value});
+  document.getElementById('fbout').textContent = r.verdict === 'benar' ? 'tercatat: benar' : 'tercatat: override (salah)';
+}
+async function sim(mode) { await api('/simulate', {mode, duration_s: 180, rps: 5}); refresh(); }
+async function chaos(delay_ms, error_ratio) { await api('/chaos', {delay_ms, error_ratio}); refresh(); }
+async function refresh() {
+  try {
+    const s = await api('/simulate');
+    document.getElementById('simstat').textContent = `mode=${s.mode}  terkirim=${s.sent}  error=${s.errors}  sisa=${s.seconds_left}s`;
+    const c = await api('/chaos');
+    document.getElementById('chaosstat').textContent = `latensi tambahan=${c.delay_ms} ms  error=${Math.round(c.error_ratio*100)}%`;
+    const h = await api('/health');
+    document.getElementById('ver').textContent = h.model_version;
+  } catch (e) { document.getElementById('simstat').textContent = 'API tidak terjangkau: ' + e.message; }
+}
+refresh(); setInterval(refresh, 2000);
+</script>
+</body>
+</html>

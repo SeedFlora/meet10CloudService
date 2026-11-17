@@ -1,0 +1,22 @@
+# URL yang dicek blackbox exporter. Simpan file ini, Prometheus membacanya ulang dalam 30 detik.
+- targets: ["http://model-api:8000/health"]
+  labels:
+    app: model-api
+    lokasi: lokal
+
+# Contoh website di internet. GANTI dengan URL deploy kelompokmu, misalnya
+#   https://<user>-<space>.hf.space        (Hugging Face Space)
+#   https://<project>.vercel.app/api/ready (Next.js Lab 08 di Vercel)
+- targets: ["https://huggingface.co"]
+  labels:
+    app: huggingface-hub
+    lokasi: web
+
+# Aplikasi lab sebelumnya yang berjalan di laptop (hapus tanda # bila aplikasinya sedang jalan).
+# Jalankan aplikasinya dengan host 0.0.0.0 agar bisa dijangkau dari container.
+# - targets: ["http://host.docker.internal:3000/api/ready"]      # Lab 08 Next.js
+#   labels: {app: cloud-notes, lokasi: lokal}
+# - targets: ["http://host.docker.internal:7860/gradio_api/info"] # Lab 09 Gradio
+#   labels: {app: gradio-sentimen, lokasi: lokal}
+# - targets: ["http://host.docker.internal:8011/ready"]           # Lab 11 RAG
+#   labels: {app: rag-api, lokasi: lokal}

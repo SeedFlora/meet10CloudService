@@ -1,0 +1,5 @@
+# Semua file konfigurasi stack ini pakai LF agar sama persis di Windows, macOS, dan Linux.
+* text=auto eol=lf
+*.png binary
+# Skrip Windows (dobel-klik) wajib CRLF.
+*.bat text eol=crlf

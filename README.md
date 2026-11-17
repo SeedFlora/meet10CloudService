@@ -18,6 +18,10 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
 
 Ikuti [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md). Modul memakai **PowerShell, clone baru, satu perintah tiap langkah**, hasil yang diharapkan, dan screenshot contoh. Semua langkah utama berjalan lokal. Tidak ada laporan atau push terpisah yang wajib dikumpulkan.
 
+## Tambahan opsional: Monitoring ML dengan Prometheus dan Grafana
+
+Setelah menyelesaikan praktikum utama, buka [`ml-monitoring/`](ml-monitoring/README.md) untuk mencoba stack Docker pada materi ML in Production. Stack mencakup model API sentimen yang mengekspor metrik sistem, model, dan bisnis, Prometheus dengan 7 alert, blackbox exporter untuk mengecek website, serta dashboard Grafana. Jalankan `docker compose up -d --build` di folder itu, buka http://localhost:8090 (panel simulasi) dan http://localhost:3001 (Grafana). Cek otomatis dengan `docker compose exec model-api python check_stack.py`.
+
 ## Log dan observability
 
 Route Handler Lab 08 memakai `src/lib/logger.ts` dan mencatat JSON (`timestamp`, `level`, `event`, `requestId`, `status`, `durationMs`) pada log server Next.js. Buat beberapa catatan dan cocokkan request di terminal Next.js. Jangan log isi catatan, password, access token, atau webhook URL. Script ini mengukur **uptime** dan **latensi probe**; metrics, logs, dan traces adalah tiga sinyal berbeda. Core Web Vitals saat ini adalah LCP, INP, CLS; FID hanya metrik historis.
@@ -32,5 +36,9 @@ Route Handler Lab 08 memakai `src/lib/logger.ts` dan mencatat JSON (`timestamp`,
 **Bukti:** JSONL lima check, laporan p95/availability, satu simulasi DOWN, screenshot status page, dan contoh satu baris log JSON tanpa secret. **Git opsional:** push script dan target contoh saja.
 
 Rujukan: [Google Core Web Vitals](https://web.dev/articles/vitals), [INP menggantikan FID](https://web.dev/blog/fid), [Vercel observability](https://vercel.com/docs/observability).
+
+**Tambahan: monitor endpoint AI.** `targets.ai.example.json` memantau `/gradio_api/info` (metadata API Lab 09), `/ready` (koneksi database RAG Lab 11), `/api/ready` (API Lab 06 dari Next.js Lab 08), dan `/v1/models` (daftar model Ollama). Kirim inferensi terpisah untuk menguji apakah model dapat menjawab. Jalankan `python monitor.py --targets targets.ai.example.json --output ai_observations.jsonl --reset --count 3 --interval 0`, `python report.py ai_observations.jsonl`, lalu `python status.py --input ai_observations.jsonl --output ai_status.html` (macOS/Linux: `python3`). Jalankan probe sebelum dan setelah menghentikan Ollama untuk membandingkan status Ollama dengan readiness Next.js. Untuk API model dari penyedia cloud, catat juga rasio HTTP 429/5xx dan sisa kuota harian dari dashboard provider.
+
+> **⚠ SESUAIKAN DI DEVICE-MU:** Windows memakai `python` (atau `py`), macOS/Linux memakai `python3`; tidak ada paket tambahan. Hapus baris target untuk layanan yang tidak kamu jalankan (target yang mati akan DOWN) dan ubah port bila Lab 08/09/11 atau Ollama berjalan di port lain. `ai_status.html` cukup dibuka dengan dobel-klik.
 
 Checker mandiri: `python -B tests/challenge.py` menguji kode dengan server HTTP sementara tanpa tiga service lain; hasil **9 PASS, 0 FAIL**. Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan Git](PANDUAN_GIT.md). Screenshot berada di `screenshots/`.
