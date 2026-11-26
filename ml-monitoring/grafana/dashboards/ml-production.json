@@ -1,6 +1,6 @@
 {
   "uid": "ml-production",
-  "title": "ML Production · Sentiment API (3-Layer Monitoring)",
+  "title": "ML Production - Sentiment API (3-Layer Monitoring)",
   "description": "Pertemuan 10 Cloud Services: monitoring sistem, model, dan bisnis dengan Prometheus + Grafana.",
   "tags": [
     "ml",
@@ -36,7 +36,7 @@
     {
       "type": "row",
       "id": 1,
-      "title": "Layer 1 · Sistem: kesehatan infrastruktur yang melayani model",
+      "title": "Layer 1 - Sistem: kesehatan infrastruktur yang melayani model",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -477,7 +477,7 @@
     {
       "type": "timeseries",
       "id": 8,
-      "title": "Latensi /predict (p50 · p95 · p99)",
+      "title": "Latensi /predict (p50 - p95 - p99)",
       "description": "Garis putus-putus merah = batas SLO 200 ms.",
       "datasource": {
         "type": "prometheus",
@@ -690,7 +690,7 @@
     {
       "type": "row",
       "id": 10,
-      "title": "Layer 2 · Model: distribusi prediksi, confidence, dan drift",
+      "title": "Layer 2 - Model: distribusi prediksi, confidence, dan drift",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -992,7 +992,7 @@
     {
       "type": "row",
       "id": 14,
-      "title": "Layer 3 · Bisnis: dampak model ke pengguna",
+      "title": "Layer 3 - Bisnis: dampak model ke pengguna",
       "collapsed": false,
       "gridPos": {
         "h": 1,

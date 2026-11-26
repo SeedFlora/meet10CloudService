@@ -1,19 +1,19 @@
-# Monitoring ML lokal: Prometheus + Grafana (Docker)
+# Monitoring ML dengan Prometheus dan Grafana
 
-Praktik untuk materi **Pertemuan 10 ML in Production, Bagian 02 Monitoring**. Satu perintah menyalakan model API sentimen yang mengekspor metrik **3 layer** (sistem, model, bisnis), Prometheus yang mengambil metrik dan mengevaluasi alert, blackbox exporter yang mengecek website lokal dan web, serta Grafana dengan dashboard yang langsung tersedia. Semuanya gratis, jalan di laptop, tanpa akun cloud dan tanpa GPU.
+Praktik untuk materi **Pertemuan 10 ML in Production, Bagian 02 Monitoring**. Satu perintah menyalakan model API sentimen yang mengekspor metrik **3 layer** (sistem, model, bisnis), Prometheus yang mengambil metrik dan mengevaluasi alert, blackbox exporter yang mengecek website lokal dan web, serta Grafana dengan dashboard yang langsung tersedia. Dosen dapat menjalankan demo di laptop dengan Docker. Mahasiswa dapat mengikuti latihan di GitHub Codespaces melalui browser. Model berjalan di CPU.
 
 | Container | Image | Port laptop | Fungsi |
 |---|---|---|---|
 | `model-api` | build lokal dari `python:3.12-slim` | 8090 | API sentimen, `/metrics`, panel simulasi |
 | `prometheus` | `prom/prometheus:v3.13.5` (LTS) | 9090 | scrape metrik tiap 5 detik, evaluasi 7 alert |
 | `blackbox` | `prom/blackbox-exporter:v0.29.1` | 9115 | cek URL lokal dan internet (synthetic check) |
-| `grafana` | `grafana/grafana:13.3.1` | 3001 | dashboard *ML Production · Sentiment API* |
+| `grafana` | `grafana/grafana:13.3.1` | 3001 | dashboard *ML Production - Sentiment API* |
 
 Unduhan pertama sekitar **700 MB** (Grafana sekitar 506 MB), jadi tarik image sebelum kelas. Saat berjalan, keempat container memakai sekitar **400 MB RAM**. Grafana sengaja di port 3001 agar port 3000 tetap bebas untuk Next.js Lab 08.
 
 > Jangan ganti Grafana ke tag `-slim`. Varian itu tidak membawa plugin data source Prometheus, sehingga semua panel gagal dengan pesan *Plugin not registered* (sudah diuji).
 
-## 1. Jalankan
+## 1. Demo dosen di Docker lokal
 
 Syarat: Docker menyala (`docker version` menampilkan bagian *Server*). Perintah di bawah sama untuk PowerShell (Windows) dan Terminal (macOS/Linux):
 
@@ -47,6 +47,23 @@ docker compose exec model-api python check_stack.py
 ```
 
 Hasil yang diharapkan: **11/11 PASS**. Tambahkan `--drift` untuk ikut menguji alert drift (sekitar 1 sampai 2 menit, hasil **12/12 PASS**).
+
+### Latihan mahasiswa di GitHub Codespaces
+
+1. Masuk ke GitHub dan buka [repo Teori 10](https://github.com/SeedFlora/meet10CloudService). Pilih branch **main**, klik **Code → Codespaces → Create codespace on main**. Tunggu editor dan tab **Terminal** terbuka.
+2. Di Terminal, jalankan baris berikut satu per satu. Tunggu sampai prompt kembali sebelum menjalankan baris berikutnya.
+
+   ```bash
+   cd ml-monitoring
+   docker compose up -d --build --wait
+   docker compose exec -T model-api python check_stack.py
+   ```
+
+   Hasil yang diharapkan adalah **11/11 PASS**. Pada percobaan pertama, Docker perlu mengunduh image.
+3. Klik tab **Ports** di sebelah Terminal. Tambahkan port **8090** (simulator), **3001** (Grafana), dan **9090** (Prometheus) jika belum muncul. Gunakan **Forward a Port** atau **Add Port**, ketik satu nomor, lalu tekan **Enter**. Biarkan **Visibility** masing-masing **Private**.
+4. Klik kanan setiap baris port dan pilih **Open in Browser**. Di tab simulator, klik **Prediksi** dan **Trafik normal**. Di Grafana, pilih **Last 5 minutes** dan refresh **5s**. Beri waktu sekitar satu menit, lalu periksa **Model API** berstatus **UP** dan grafik request serta latensi mulai terisi.
+5. Di Prometheus, buka **Status → Target health** untuk melihat target. Kembali ke simulator dan klik **Trafik drift**. Di Grafana, amati perubahan confidence dan PSI. Di Prometheus, buka **Alerts** dan temukan **InputDriftPSI**. Kembalikan ke **Trafik normal** dan lihat alert pulih.
+6. Setelah latihan, klik **Stop** di simulator. Di repo, buka **Code → Codespaces**, klik **…** di sebelah nama Codespace milikmu lalu **Stop codespace**.
 
 ## 2. Skenario demo (sekitar 15 menit)
 
