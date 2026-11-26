@@ -1,5 +1,14 @@
 # Lab 10 — Monitoring, log terstruktur, SLI/SLO
 
+## Mulai dari kelasmu
+
+| Saya ingin… | Buka panduan ini |
+|---|---|
+| Mengikuti **Teori 10 LA75** dari nol | [Jalankan simulator, Prometheus, dan Grafana di Docker lokal atau GitHub Codespaces](ml-monitoring/README.md). Di Codespaces pilih branch `main`. Setelah checker menampilkan **11/11 PASS**, buka tab **Ports**. |
+| Mengubah **tampilan Grafana atau web simulator** | [Panduan modifikasi Teori 10](ml-monitoring/README.md#modifikasi-tampilan). Ada contoh mengubah warna dan judul grafik, menambah panel prediksi lima menit, serta mengganti tampilan simulator. |
+| Mengerjakan **Lab 10** tentang uptime, log, dan SLO | [Modul Lab 10](MODUL_MAHASISWA.md). Gunakan skrip Python dari folder utama repo ini untuk mengambil sampel HTTP dan membuat laporan. |
+| Mengubah **web Cloud Notes di Lab 08 BA75/BB75** | [Panduan edit web di repo Lab 08](https://github.com/SeedFlora/meet8CloudService/tree/lab08-docker-codespaces#modifikasi-halaman-cloud-notes). Di sana kamu bisa mengubah teks, tombol, warna, dan judul tab, lalu menguji kembali penyimpanan catatan. |
+
 <!-- lecture-materials:start -->
 
 ## Materi teori sebelum praktikum
@@ -18,9 +27,16 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
 
 Ikuti [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md). Modul memakai **PowerShell, clone baru, satu perintah tiap langkah**, hasil yang diharapkan, dan screenshot contoh. Semua langkah utama berjalan lokal. Tidak ada laporan atau push terpisah yang wajib dikumpulkan.
 
-## Tambahan opsional: Monitoring ML dengan Prometheus dan Grafana
+## Demo Teori 10 dengan Prometheus dan Grafana
 
-Setelah menyelesaikan praktikum utama, buka [`ml-monitoring/`](ml-monitoring/README.md) untuk mencoba stack Docker pada materi ML in Production. Stack mencakup model API sentimen yang mengekspor metrik sistem, model, dan bisnis, Prometheus dengan 7 alert, blackbox exporter untuk mengecek website, serta dashboard Grafana. Jalankan `docker compose up -d --build` di folder itu, buka http://localhost:8090 (panel simulasi) dan http://localhost:3001 (Grafana). Cek otomatis dengan `docker compose exec model-api python check_stack.py`.
+Jalankan perintah dari folder `ml-monitoring`. Jika terminal masih di folder utama repo, masuk dengan `cd ml-monitoring`. Lalu jalankan satu baris setiap kali.
+
+```sh
+docker compose up -d --build --wait
+docker compose exec -T model-api python check_stack.py
+```
+
+Di laptop, buka [simulator](http://127.0.0.1:8090), [dashboard Grafana](http://127.0.0.1:3001/d/ml-production?from=now-5m&to=now&refresh=5s), dan [target Prometheus](http://127.0.0.1:9090/targets). Di Codespaces, buka port privat **8090**, **3001**, dan **9090** melalui **Ports → Open in Browser**. Di simulator klik **Trafik normal**, tunggu kira-kira satu menit, lalu catat confidence dan PSI sebelum beralih ke **Trafik drift (bahasa gaul)**. Untuk memahami apa yang berubah dan mengedit tampilannya, ikuti [README monitoring](ml-monitoring/README.md).
 
 ## Log dan observability
 
